@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RxJS Counter Practice</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+
+    <style>
+      .navbar-app {
+        background-color: rgb(249, 250, 251);
+        box-shadow: 0 1px 3px 0 rgba(0 0 0 / 0.1),
+          0 1px 2px -1px rgba(0 0 0 / 0.1);
+      }
+
+      .navbar-app h1 {
+        font-size: 1.5rem;
+      }
+
+      .counter-value {
+        padding: 1rem;
+        font-weight: bold;
+        font-size: 3rem;
+      }
+
+      input {
+        width: 5rem;
+        height: 2rem;
+        font-size: 1rem;
+      }
+
+      .change {
+        margin: 1rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar-app">
+      <header class="d-flex justify-content-center py-3">
+        <h1>Counter</h1>
+      </header>
+    </div>
+
+    <div class="container text-center">
+      <div class="counter">
+        <div class="counter-value">
+          <span id="value">0</span>
+        </div>
+        <div class="counter-controls">
+          <button class="btn btn-primary" id="decrement">-</button>
+          <button class="btn btn-primary" id="increment">+</button>
+        </div>
+        <div class="change">
+          <label for="changeBy">Increment/Decrement by:</label>
+          <input type="number" id="changeBy" value="1" min="1" max="10" />
+        </div>
+        <div class="counter-controls">
+          <button class="btn btn-primary" id="reset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      import { fromEvent, from, merge, map, scan } from 'rxjs';
+
+      function updateValue(total) {
+        valueSpan.innerHTML = total;
+      }
+
+      function resetValue() {
+        valueSpan.innerHTML = 0;
+      }
+
+      const valueSpan = document.getElementById('value');
+      const decrementButton = document.getElementById('decrement');
+      const incrementButton = document.getElementById('increment');
+      const changeBy = document.getElementById('changeBy');
+      const reset = document.getElementById('reset');
+
+      // make event from increment and decrement button
+      const increment$ = fromEvent(incrementButton, 'click').pipe(
+        map(() => 'add')
+      );
+      const decrement$ = fromEvent(decrementButton, 'click').pipe(
+        map(() => 'minus')
+      );
+
+      // reset event
+      const reset$ = fromEvent(reset, 'click').pipe(map(() => 'reset'));
+
+      const performOperation$ = merge(increment$, decrement$, reset$).pipe(
+        map((operation) => {
+          if (operation === 'add') {
+            return parseInt(changeBy.value);
+          } else if (operation === 'minus') {
+            return -parseInt(changeBy.value);
+          } else if (operation === 'reset') {
+            return 'reset';
+          }
+        }),
+        scan((total, current) => (current === 'reset' ? 0 : total + current), 0)
+      );
+
+      performOperation$.subscribe(updateValue);
+    </script>
+  </body>
+</html>
