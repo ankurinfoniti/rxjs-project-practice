@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RxJS Auto Complete</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+
+    <style>
+      .navbar-app {
+        background-color: rgb(249, 250, 251);
+        box-shadow: 0 1px 3px 0 rgba(0 0 0 / 0.1),
+          0 1px 2px -1px rgba(0 0 0 / 0.1);
+      }
+
+      .navbar-app h1 {
+        font-size: 1.5rem;
+      }
+
+      .counter-value {
+        padding: 1rem;
+        font-weight: bold;
+        font-size: 3rem;
+      }
+
+      input {
+        width: 25rem;
+        height: 2rem;
+        font-size: 1rem;
+      }
+
+      .change {
+        margin: 1rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar-app">
+      <header class="d-flex justify-content-center py-3">
+        <h1>Search Auto Complete</h1>
+      </header>
+    </div>
+
+    <div class="container text-center">
+      <div class="counter">
+        <div class="change">
+          <input type="text" id="search-state" />
+        </div>
+        <div class="counter-controls" id="state-list"></div>
+      </div>
+    </div>
+
+    <script>
+      import {
+        debounceTime,
+        distinctUntilChanged,
+        fromEvent,
+        map,
+        startWith,
+      } from 'rxjs';
+
+      const indianStates = [
+        'Andhra Pradesh',
+        'Arunachal Pradesh',
+        'Assam',
+        'Bihar',
+        'Chhattisgarh',
+        'Goa',
+        'Gujarat',
+        'Haryana',
+        'Himachal Pradesh',
+        'Jharkhand',
+        'Karnataka',
+        'Kerala',
+        'Madhya Pradesh',
+        'Maharashtra',
+        'Manipur',
+        'Meghalaya',
+        'Mizoram',
+        'Nagaland',
+        'Odisha',
+        'Punjab',
+        'Rajasthan',
+        'Sikkim',
+        'Tamil Nadu',
+        'Telangana',
+        'Tripura',
+        'Uttar Pradesh',
+        'Uttarakhand',
+        'West Bengal',
+      ];
+
+      function listState(states) {
+        stateList.innerHTML = '';
+        const dFrag = document.createDocumentFragment();
+
+        states.forEach((state) => {
+          const p = document.createElement('p');
+
+          p.textContent = state;
+          dFrag.appendChild(p);
+        });
+
+        stateList.appendChild(dFrag);
+      }
+
+      const searchState = document.getElementById('search-state');
+      const stateList = document.getElementById('state-list');
+
+      const search$ = fromEvent(searchState, 'input');
+
+      search$
+        .pipe(
+          map((event) => event.target.value),
+          debounceTime(500),
+          distinctUntilChanged(),
+          startWith(''),
+          map((value) => {
+            return indianStates.filter((state) => {
+              return state.toLowerCase().includes(value.toLowerCase());
+            });
+          })
+        )
+        .subscribe(listState);
+    </script>
+  </body>
+</html>
